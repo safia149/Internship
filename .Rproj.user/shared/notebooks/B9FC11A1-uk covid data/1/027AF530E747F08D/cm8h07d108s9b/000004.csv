@@ -1,3 +1,0 @@
-"0","setwd(""~/GitHub/Internship"")"
-"0","covid_data <- read.csv('owid-covid-data.csv')"
-"0","head(covid_data)"

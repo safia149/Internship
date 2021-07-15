@@ -7,7 +7,7 @@ library(scales)
 ```
 
 ```{r}
-setwd("~/Internship-main/Internship-main/Internship")
+setwd("~/GitHub/Internship")
 covid_data <- read.csv('owid-covid-data.csv')
 head(covid_data)
 names(covid_data)
@@ -30,6 +30,7 @@ covid_data %>% filter(location == "United Kingdom")
 UK_covid_data <- covid_data %>% select(location, date, total_cases,total_cases_per_million, new_cases, total_deaths, total_deaths_per_million, new_deaths, new_deaths_per_million, weekly_hosp_admissions, weekly_icu_admissions_per_million, total_tests, total_tests_per_thousand, positive_rate, total_vaccinations, total_vaccinations_per_hundred, new_vaccinations, new_vaccinations_smoothed_per_million, median_age, aged_65_older) %>% filter(location == "United Kingdom")
 UK_covid_data
 ```
+
 The table containing data I find to be relative and useful to the research questions I'm trying to answer are stored under the variable UK_covid_data
 
 change the date from 'character' to 'date'
@@ -40,14 +41,14 @@ UK_covid_data$date<- as.Date(UK_covid_data$date)
 class(UK_covid_data$date)
 class(UK_covid_data$total_cases)
 ```
-plot a graph to show the progression  new covid cases
+plot a graph to show the progression of total covid cases
 ```{r}
 theme_set(theme_minimal())
 ggplot(UK_covid_data, aes(date, total_cases))+
   geom_line()+
   scale_x_date(date_breaks = "1 month", date_labels = "%b%y" )+
   scale_y_continuous(labels = label_number())
-  
+ggsave("UK Total cases time series.png")
 ```
 using the same code to plot new cases
 ```{r}
@@ -57,6 +58,7 @@ ggplot(UK_covid_data, aes(date, new_cases))+
   scale_x_date(date_breaks = "1 month", date_labels = "%b%y" )+
   scale_y_continuous(labels = label_comma(), )+
   labs(title = "Daily new cases of Covid-19 in the UK", x= "Date", y="no. New cases")
+ggsave("UK New cases time series.png")
 ```
 plotting new cases with new deaths
 ```{r}
@@ -69,6 +71,7 @@ ggplot()+
   annotate("text", x= as.Date("2020-12-08"), y= 60000, label= "Vaccine 21+ (8Dec)", angle= 90, size= 2)+
   geom_vline(xintercept = as.numeric(as.Date("2021-06-16")))+
   annotate("text", x= as.Date("2021-06-16"), y= 60000, label= "Vaccine U21 (8Dec)", angle= 90, size= 2)
+ggsave("UK new deaths and new cases time series (vaccine) time series.png")
 ```
 when I tried changing the y axis scale to log10 to make it easier to compare the two, it introduced infinite values into the continuous y axis
 
