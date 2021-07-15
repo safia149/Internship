@@ -9,14 +9,21 @@ library(scales)
 ```{r}
 setwd("~/GitHub/Internship")
 covid_data <- read.csv('owid-covid-data.csv')
+# Steven: I recommend reading directly from the internet
+covid_data <- read_csv('https://covid.ourworldindata.org/data/owid-covid-data.csv')
+
 head(covid_data)
 names(covid_data)
 ```
 ```{r}
 plot(covid_data$total_cases, covid_data$total_vaccinations)
+# Steven: I recommend using ggplot. Also, try to choose quantities on x and y axes that will give
+# a more meaningful plot
+# ggplot(covid_data, aes(x=date, y=total_cases)) + geom_line(color = 'red')
 ```
 ```{r}
 require(tidyverse)
+# Steven: this is redundant - you already loaded tidyverse
 ```
 ```{r}
 covid_data
@@ -28,10 +35,12 @@ covid_data %>% filter(location == "United Kingdom")
 ```
 ```{r}
 UK_covid_data <- covid_data %>% select(location, date, total_cases,total_cases_per_million, new_cases, total_deaths, total_deaths_per_million, new_deaths, new_deaths_per_million, weekly_hosp_admissions, weekly_icu_admissions_per_million, total_tests, total_tests_per_thousand, positive_rate, total_vaccinations, total_vaccinations_per_hundred, new_vaccinations, new_vaccinations_smoothed_per_million, median_age, aged_65_older) %>% filter(location == "United Kingdom")
+# Steven: UK_covid_data looks like it's the same thing as covid_data. Only need one of these
 UK_covid_data
 ```
 
 The table containing data I find to be relative and useful to the research questions I'm trying to answer are stored under the variable UK_covid_data
+Steven: UK_covid_data is a dataframe. Better to call it that instead of a variable.
 
 change the date from 'character' to 'date'
 ```{r}
@@ -48,6 +57,7 @@ ggplot(UK_covid_data, aes(date, total_cases))+
   geom_line()+
   scale_x_date(date_breaks = "1 month", date_labels = "%b%y" )+
   scale_y_continuous(labels = label_number())
+# Steven: I recommend setting date_breaks = "2 month". Otherwise the lables on  axis get squashed and its hard to read.
 ggsave("UK Total cases time series.png")
 ```
 using the same code to plot new cases
@@ -58,6 +68,7 @@ ggplot(UK_covid_data, aes(date, new_cases))+
   scale_x_date(date_breaks = "1 month", date_labels = "%b%y" )+
   scale_y_continuous(labels = label_comma(), )+
   labs(title = "Daily new cases of Covid-19 in the UK", x= "Date", y="no. New cases")
+# Steven: same thing, set date_breaks = "2 month"
 ggsave("UK New cases time series.png")
 ```
 plotting new cases with new deaths
@@ -74,4 +85,7 @@ ggplot()+
 ggsave("UK new deaths and new cases time series (vaccine) time series.png")
 ```
 when I tried changing the y axis scale to log10 to make it easier to compare the two, it introduced infinite values into the continuous y axis
+Steven: Probabably because log(0) = -infinity.
+There appear to be two days where the number of new cases is negative. Can you explain what is happening there?
+
 
