@@ -1,13 +1,90 @@
-Version: 1.0
+---
+title: "R Notebook"
+output: html_notebook
+---
 
-RestoreWorkspace: Default
-SaveWorkspace: Default
-AlwaysSaveHistory: Default
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
 
-EnableCodeIndexing: Yes
-UseSpacesForTab: Yes
-NumSpacesForTab: 2
-Encoding: UTF-8
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
-RnwWeave: Sweave
-LaTeX: pdfLaTeX
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r}
+library(ggplot2)
+library(tidyverse)
+library(gtable)
+library(scales)
+```
+
+```{r}
+covid_data <- read.csv('owid-covid-data.csv')
+head(covid_data)
+names(covid_data)
+```
+```{r}
+plot(covid_data$total_cases, covid_data$total_vaccinations)
+```
+```{r}
+require(tidyverse)
+```
+```{r}
+covid_data
+```
+filter for the columns necessary
+```{r}
+covid_data %>% select(location, date, total_cases,total_cases_per_million, new_cases, total_deaths, total_deaths_per_million, new_deaths, new_deaths_per_million, weekly_hosp_admissions, weekly_icu_admissions_per_million, total_tests, total_tests_per_thousand, positive_rate, total_vaccinations, total_vaccinations_per_hundred, new_vaccinations, new_vaccinations_smoothed_per_million, median_age, aged_65_older)
+covid_data %>% filter(location == "United Kingdom")
+```
+```{r}
+UK_covid_data <- covid_data %>% select(location, date, total_cases,total_cases_per_million, new_cases, total_deaths, total_deaths_per_million, new_deaths, new_deaths_per_million, weekly_hosp_admissions, weekly_icu_admissions_per_million, total_tests, total_tests_per_thousand, positive_rate, total_vaccinations, total_vaccinations_per_hundred, new_vaccinations, new_vaccinations_smoothed_per_million, median_age, aged_65_older) %>% filter(location == "United Kingdom")
+UK_covid_data
+```
+The table containing data I find to be relative and useful to the research questions I'm trying to answer are stored under the variable UK_covid_data
+
+change the date from 'character' to 'date'
+```{r}
+UK_covid_data
+class(UK_covid_data$date)
+UK_covid_data$date<- as.Date(UK_covid_data$date)
+class(UK_covid_data$date)
+class(UK_covid_data$total_cases)
+```
+plot a graph to show the progression  new covid cases
+```{r}
+theme_set(theme_minimal())
+ggplot(UK_covid_data, aes(date, total_cases))+
+  geom_line()+
+  scale_x_date(date_breaks = "1 month", date_labels = "%b%y" )+
+  scale_y_continuous(labels = label_number())
+  
+```
+using the same code to plot new cases
+```{r}
+theme_set(theme_minimal())
+ggplot(UK_covid_data, aes(date, new_cases))+
+  geom_line()+
+  scale_x_date(date_breaks = "1 month", date_labels = "%b%y" )+
+  scale_y_continuous(labels = label_comma(), )+
+  labs(title = "Daily new cases of Covid-19 in the UK", x= "Date", y="no. New cases")
+```
+plotting new cases with new deaths
+```{r}
+ggplot()+
+  geom_line(aes(UK_covid_data$date, UK_covid_data$new_cases), colour= "red")+
+  geom_line(aes(UK_covid_data$date, UK_covid_data$new_deaths), colour= "blue")+
+  labs(title= "Reports of daily new deaths and new cases", y= "no. reports", x= "Date")+
+  scale_y_continuous(labels = label_comma())+
+  geom_vline(xintercept = as.numeric(as.Date("2020-12-08")))+
+  annotate("text", x= as.Date("2020-12-08"), y= 60000, label= "Vaccine 21+ (8Dec)", angle= 90, size= 2)+
+  geom_vline(xintercept = as.numeric(as.Date("2021-06-16")))+
+  annotate("text", x= as.Date("2021-06-16"), y= 60000, label= "Vaccine U21 (8Dec)", angle= 90, size= 2)
+```
+when I tried changing the y axis scale to log10 to make it easier to compare the two, it introduced infinite values into the continuous y axis 
+
