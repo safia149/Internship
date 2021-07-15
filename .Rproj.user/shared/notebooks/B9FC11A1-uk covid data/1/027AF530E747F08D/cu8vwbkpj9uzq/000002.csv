@@ -1,0 +1,6 @@
+"0","theme_set(theme_minimal())"
+"0","ggplot(UK_covid_data, aes(date, new_cases))+"
+"0","  geom_line()+"
+"0","  scale_x_date(date_breaks = ""1 month"", date_labels = ""%b%y"" )+"
+"0","  scale_y_continuous(labels = label_comma(), )+"
+"0","  labs(title = ""Daily new cases of Covid-19 in the UK"", x= ""Date"", y=""no. New cases"")"

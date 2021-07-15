@@ -1,0 +1,1 @@
+"0","plot(covid_data$total_cases, covid_data$total_vaccinations)"

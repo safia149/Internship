@@ -7,7 +7,7 @@ library(scales)
 ```
 
 ```{r}
-setwd("~/Internship-main/Internship-main/Internship")
+setwd("~/GitHub/Internship")
 covid_data <- read.csv('owid-covid-data.csv')
 head(covid_data)
 names(covid_data)
@@ -30,6 +30,7 @@ covid_data %>% filter(location == "United Kingdom")
 UK_covid_data <- covid_data %>% select(location, date, total_cases,total_cases_per_million, new_cases, total_deaths, total_deaths_per_million, new_deaths, new_deaths_per_million, weekly_hosp_admissions, weekly_icu_admissions_per_million, total_tests, total_tests_per_thousand, positive_rate, total_vaccinations, total_vaccinations_per_hundred, new_vaccinations, new_vaccinations_smoothed_per_million, median_age, aged_65_older) %>% filter(location == "United Kingdom")
 UK_covid_data
 ```
+
 The table containing data I find to be relative and useful to the research questions I'm trying to answer are stored under the variable UK_covid_data
 
 change the date from 'character' to 'date'
@@ -71,4 +72,5 @@ ggplot()+
   annotate("text", x= as.Date("2021-06-16"), y= 60000, label= "Vaccine U21 (8Dec)", angle= 90, size= 2)
 ```
 when I tried changing the y axis scale to log10 to make it easier to compare the two, it introduced infinite values into the continuous y axis
+
 

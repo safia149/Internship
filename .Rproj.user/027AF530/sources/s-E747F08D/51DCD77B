@@ -3,9 +3,9 @@
     "path": "~/GitHub/Internship/uk covid data.Rmd",
     "project_path": "uk covid data.Rmd",
     "type": "r_markdown",
-    "hash": "4191573941",
+    "hash": "1165010827",
     "contents": "",
-    "dirty": false,
+    "dirty": true,
     "created": 1626335900124.0,
     "source_on_save": false,
     "relative_order": 1,
@@ -13,15 +13,15 @@
         "chunk_output_type": "inline",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "3,18",
-        "scrollLine": "0"
+        "cursorPosition": "73,142",
+        "scrollLine": "71"
     },
     "folds": "",
     "lastKnownWriteTime": 1626337567,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1626337567996,
+    "last_content_update": 1626339713561,
     "read_only": false,
     "read_only_alternatives": []
 }
