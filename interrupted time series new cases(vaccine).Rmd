@@ -49,6 +49,6 @@ ggplot(UK_covid_data2, aes(week.begin, avg_new_cases, colour= change))+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 ggsave("interrupted time series new cases(vaccine).png")
 ```
-Safia: I've managed to get the week beginning but when I try to plot it says "Error: Invalid input: date_trans works with objects of class Date only"
+Safia: I've managed to get the week beginning but when I try to plot it says "Error: Invalid input: date_trans works with objects of class Date only".
 
 
