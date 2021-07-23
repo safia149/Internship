@@ -1,0 +1,32 @@
+```{r}
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(lubridate)
+setwd("~/GitHub/Internship")
+covid_data <- read_csv('https://covid.ourworldindata.org/data/owid-covid-data.csv')
+```
+
+```{r}
+UK_covid_data3<-UK_covid_data
+UK_covid_data3$week_no.<- as.integer(as.duration("2020-02-03"%--%UK_covid_data$date)/dweeks(1))
+UK_covid_data3<- UK_covid_data3%>%
+  group_by(week_no.)%>%
+  summarise(avg_new_deaths= mean(new_deaths))
+UK_covid_data2$avg_new_deaths<- UK_covid_data3$avg_new_deaths
+```
+
+
+```{r}
+ggplot(UK_covid_data2, aes(week.begin, UK_covid_data2$avg_new_deaths, colour= change))+
+  geom_point()+
+  geom_line()+
+  scale_y_log10()+
+  scale_x_date()+
+  geom_vline(xintercept = "2020-12-08")+
+  annotate("text", x= "2020-12-08", y= 60000, label= "Vaccine(8Dec)", angle= 90, size= 2, linetype= 2, colour= grey)+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+  labs(title = "UK New Cases", x= "Week", y= "Confimed new cases")
+ggsave("interrupted time series new deaths(vaccine).png")
+```
+
