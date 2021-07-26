@@ -11,12 +11,19 @@ covid_data <- read_csv('https://covid.ourworldindata.org/data/owid-covid-data.cs
 UK_covid_data<- UK_covid_data%>%
   filter(UK_covid_data$date>= "2020-02-03")
 UK_covid_data2<- UK_covid_data
+
+# Steven: My suggestion for getting the week from a date
+# This one gives weeks since start of year, which might be easier to work with in some ways
+#UK_covid_data2 <- mutate(UK_covid_data2, week_no = week(date))
+# This gives weeks since 30th January 2020
+#UK_covid_data2 <- mutate(UK_covid_data2, week_no = as.numeric(ceiling(difftime(date, "2020-1-30", units = "weeks") ) ))
+
 UK_covid_data2$week_no.<- as.integer(as.duration("2020-02-03"%--%UK_covid_data$date)/dweeks(1))
 as.duration("2020-02-03"%--%"2020-12-08")/dweeks(1)
 UK_covid_data2<- UK_covid_data2%>%
   group_by(week_no.)%>%
   summarise(avg_new_cases= mean(new_cases))%>%
-  mutate(week_no.= week_no., change= ifelse(week_no.>=45, 1, 0))
+  mutate(change= ifelse(week_no.>=45, 1, 0))
 UK_covid_data2$vaccine_week<- ifelse(UK_covid_data2$week_no.> 45, 1, 0)
 
 UK_covid_data2$vaccine_week<- UK_covid_data2$week_no.-45
@@ -25,6 +32,8 @@ UK_covid_data2$change<- as.factor(UK_covid_data2$change)
 UK_covid_data2$week_no.<- UK_covid_data2$week_no.+1
 ```
 ```{r}
+# Steven: ceiling_date is the last day of the week. I assume you want first day of the week, in which case
+# you should use floor_date
 UK_covid_data$week.beg<- ceiling_date(UK_covid_data$date, unit = "week", week_start = 1)
 UK_covid_data$week.beg<- group_by(UK_covid_data, week.beg)
 week.beg<- summarise(UK_covid_data$week.beg)
@@ -38,13 +47,20 @@ modelling
 
 
 ```{r}
+
+sapply(UK_covid_data2, class)
+
+UK_covid_data2$week.begin <- week.begin
+
 ggplot(UK_covid_data2, aes(week.begin, avg_new_cases, colour= change))+
   geom_point()+
   geom_line()+
   scale_y_continuous()+
   scale_x_date(date_breaks = "1 week", date_labels = "%d-%m-%y")+
-  geom_vline(xintercept = "2020-12-08")+
-  annotate("text", x= "2020-12-08", y= 60000, label= "Vaccine(8Dec)", angle= 90, size= 2, linetype= 2, colour= grey)+
+   geom_vline(xintercept = as.numeric(as.Date("2020-12-08")), linetype=2, colour = "red", lwd = 0.5) +
+       annotate("text", x=as.Date("2020-12-08"), y=13000, label= "First Lockdown (26 Mar)", angle=90, hjust = -1, vjust = -0.5, colour = "red", fontface = 'bold') +
+#  geom_vline(xintercept = as.Date("2020-12-08"), linetype= 2)+
+#  annotate("text", x= as.Date("2020-12-08"), y= 60000, label= "Vaccine(8Dec)", angle= 90, size= 2 , colour= grey)+
   labs(title = "UK New Cases", x= "Week", y= "Confimed new cases")+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 ggsave("interrupted time series new cases(vaccine).png")
