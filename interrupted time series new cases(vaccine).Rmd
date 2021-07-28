@@ -9,62 +9,94 @@ covid_data <- read_csv('https://covid.ourworldindata.org/data/owid-covid-data.cs
 
 ```{r}
 UK_covid_data<- UK_covid_data%>%
-  filter(UK_covid_data$date>= "2020-02-03")
+  filter(date>= "2020-11-10" & date<= "2021-1-5")
 UK_covid_data2<- UK_covid_data
+```
 
+```{r}
 # Steven: My suggestion for getting the week from a date
 # This one gives weeks since start of year, which might be easier to work with in some ways
 #UK_covid_data2 <- mutate(UK_covid_data2, week_no = week(date))
 # This gives weeks since 30th January 2020
 #UK_covid_data2 <- mutate(UK_covid_data2, week_no = as.numeric(ceiling(difftime(date, "2020-1-30", units = "weeks") ) ))
 
-UK_covid_data2$week_no.<- as.integer(as.duration("2020-02-03"%--%UK_covid_data$date)/dweeks(1))
-as.duration("2020-02-03"%--%"2020-12-08")/dweeks(1)
+UK_covid_data2 <- mutate(UK_covid_data2, week_no = as.numeric(ceiling(difftime(date, "2020-11-10", units = "weeks") ) ))
+as.duration("2020-11-10"%--%"2020`-12-08")/dweeks(1)
 UK_covid_data2<- UK_covid_data2%>%
-  group_by(week_no.)%>%
+  group_by(week_no)%>%
   summarise(avg_new_cases= mean(new_cases))%>%
-  mutate(change= ifelse(week_no.>=45, 1, 0))
-UK_covid_data2$vaccine_week<- ifelse(UK_covid_data2$week_no.> 45, 1, 0)
+  mutate(change= ifelse(week_no>=4, 1, 0))
+UK_covid_data2$vaccine_week<- ifelse(UK_covid_data2$week_no> 4, 1, 0)
 
-UK_covid_data2$vaccine_week<- UK_covid_data2$week_no.-45
+UK_covid_data2$vaccine_week<- UK_covid_data2$week_no-4
 UK_covid_data2$weekpostchange<- UK_covid_data2$change * UK_covid_data2$vaccine_week
 UK_covid_data2$change<- as.factor(UK_covid_data2$change)
-UK_covid_data2$week_no.<- UK_covid_data2$week_no.+1
+UK_covid_data2$week_no<- UK_covid_data2$week_no+1
 ```
+
 ```{r}
 # Steven: ceiling_date is the last day of the week. I assume you want first day of the week, in which case
 # you should use floor_date
-UK_covid_data$week.beg<- ceiling_date(UK_covid_data$date, unit = "week", week_start = 1)
+#Safia: edited
+UK_covid_data$week.beg<- floor_date(UK_covid_data$date, unit = "week", week_start = 1)
 UK_covid_data$week.beg<- group_by(UK_covid_data, week.beg)
 week.beg<- summarise(UK_covid_data$week.beg)
 week.begin<- pull(week.beg)
 class(week.begin)
 ```
-modelling
-```{r}
-
-```
-
 
 ```{r}
 
 sapply(UK_covid_data2, class)
-
 UK_covid_data2$week.begin <- week.begin
 
 ggplot(UK_covid_data2, aes(week.begin, avg_new_cases, colour= change))+
   geom_point()+
   geom_line()+
-  scale_y_continuous()+
+  scale_y_log10()+
   scale_x_date(date_breaks = "1 week", date_labels = "%d-%m-%y")+
-   geom_vline(xintercept = as.numeric(as.Date("2020-12-08")), linetype=2, colour = "red", lwd = 0.5) +
-       annotate("text", x=as.Date("2020-12-08"), y=13000, label= "First Lockdown (26 Mar)", angle=90, hjust = -1, vjust = -0.5, colour = "red", fontface = 'bold') +
+  labs(title = "UK Weekly New Cases", x= "Week", y= "Confimed new cases(log10)")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+   geom_vline(xintercept = as.Date("2020-12-08"), linetype= 2)
+annotate("text", x= as.Date("2020-12-08"), y= 40,000, label= "Vaccine(8Dec)", angle= 90, size= 2 , colour= grey)
+  
+ggsave("interrupted time series weekly new cases(vaccine2).png")
 #  geom_vline(xintercept = as.Date("2020-12-08"), linetype= 2)+
 #  annotate("text", x= as.Date("2020-12-08"), y= 60000, label= "Vaccine(8Dec)", angle= 90, size= 2 , colour= grey)+
-  labs(title = "UK New Cases", x= "Week", y= "Confimed new cases")+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-ggsave("interrupted time series new cases(vaccine).png")
 ```
 Safia: I've managed to get the week beginning but when I try to plot it says "Error: Invalid input: date_trans works with objects of class Date only".
+Safia: It's fixed now
 
+
+#####DAILY#######
+
+```{r}
+UK_covid_data<- mutate(UK_covid_data, day_no = as.numeric(ceiling(difftime(date, "2020-11-9", units = "days") ) ))
+UK_covid_data<- UK_covid_data%>%
+  mutate(vaccine= UK_covid_data$day_no-29, change= ifelse(UK_covid_data$day_no>= 29, 1, 0))
+UK_covid_data<- mutate(UK_covid_data, dayspostchange= change * vaccine )
+UK_covid_data$change<- as.factor(UK_covid_data$change)
+```
+
+
+```{r}
+ggplot(UK_covid_data, aes(x= date, colour= change))+
+  geom_point(aes(y= new_cases))+
+  geom_line(aes(y= UK_covid_data$predictionmodel1))+
+  scale_x_date(date_breaks = "1 week", date_labels = "%d-%m-%y")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+  scale_y_log10()+
+  labs(title = "UK Daily New Cases", x= "Week", y= "Confimed new cases(log10)")+
+  geom_vline(xintercept = as.Date("2020-12-08"), linetype= 2)
+annotate("text", x= as.Date("2020-12-08"), y= 40,000, label= "Vaccine(8Dec)", angle= 90, size= 2 , colour= grey)
+ggsave("interrupted time series daily new cases(vaccine1).png")
+```
+####MODELING#####
+
+```{r}
+model1<- glm(data = UK_covid_data, new_cases~ day_no + change+ dayspostchange, family = "poisson")
+summary(model1)
+UK_covid_data<- UK_covid_data%>%
+  mutate(predictionmodel1= predict(model1, type = "response"))
+```
 

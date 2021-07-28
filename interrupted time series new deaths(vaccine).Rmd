@@ -9,24 +9,59 @@ covid_data <- read_csv('https://covid.ourworldindata.org/data/owid-covid-data.cs
 
 ```{r}
 UK_covid_data3<-UK_covid_data
-UK_covid_data3$week_no.<- as.integer(as.duration("2020-02-03"%--%UK_covid_data$date)/dweeks(1))
+UK_covid_data3<- mutate(UK_covid_data3, week_no = as.numeric(ceiling(difftime(date, "2020-11-9", units = "weeks") ) ))
 UK_covid_data3<- UK_covid_data3%>%
-  group_by(week_no.)%>%
+  group_by(UK_covid_data3$week_no)%>%
   summarise(avg_new_deaths= mean(new_deaths))
 UK_covid_data2$avg_new_deaths<- UK_covid_data3$avg_new_deaths
 ```
 
 
 ```{r}
-ggplot(UK_covid_data2, aes(week.begin, UK_covid_data2$avg_new_deaths, colour= change))+
-  geom_point()+
-  geom_line()+
+sapply(UK_covid_data2, class)
+
+ggplot(UK_covid_data2, aes(week.begin, y= UK_covid_data2$avg_new_deaths, colour= change))+
+  geom_point(aes(y= UK_covid_data2$avg_new_deaths))+
+  geom_line(aes(y= UK_covid_data2$avg_new_deaths))+
   scale_y_log10()+
   scale_x_date()+
-  geom_vline(xintercept = "2020-12-08")+
-  annotate("text", x= "2020-12-08", y= 60000, label= "Vaccine(8Dec)", angle= 90, size= 2, linetype= 2, colour= grey)+
+  geom_vline(xintercept = as.Date("2020-12-08"), linetype= 2)+
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
-  labs(title = "UK New Cases", x= "Week", y= "Confimed new cases")
-ggsave("interrupted time series new deaths(vaccine).png")
+  labs(title = "UK Weekly New Deaths", x= "Week", y= "Confimed new deaths(log10)")
+annotate("text", x= as.Date("2020-12-08"), y= 60000, label= "Vaccine(8Dec)", angle= 90, size= 2 , colour= grey)
+  
+ggsave("interrupted time series weekly new deaths(vaccine1).png")
 ```
 
+######DAILY#######
+
+```{r}
+UK_covid_data<- mutate(UK_covid_data, day_no = as.numeric(ceiling(difftime(date, "2020-11-9", units = "days") ) ))
+UK_covid_data<- UK_covid_data%>%
+  mutate(vaccine= UK_covid_data$day_no-29, change= ifelse(UK_covid_data$day_no>= 29, 1, 0))
+UK_covid_data<- mutate(UK_covid_data, dayspostchange= change * vaccine )
+UK_covid_data$change<- as.factor(UK_covid_data$change)
+```
+
+
+```{r}
+ggplot(UK_covid_data, aes(x= date, colour= change))+
+  geom_point(aes(y= new_deaths))+
+  geom_line(aes(y= UK_covid_data$predictionmodel2))+
+  scale_x_date(date_breaks = "1 week", date_labels = "%d-%m-%y")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+  scale_y_log10()+
+  labs(title = "UK Daily New Deaths", x= "Week", y= "Confimed new deaths(log10)")+
+  geom_vline(xintercept = as.Date("2020-12-08"), linetype= 2)
+annotate("text", x= as.Date("2020-12-08"), y= 40,000, label= "Vaccine(8Dec)", angle= 90, size= 2 , colour= grey)
+ggsave("interrupted time series daily new deaths(vaccine1).png")
+```
+
+######MODELING#####
+
+```{r}
+model2<- glm(data = UK_covid_data, new_deaths~ day_no + change+ dayspostchange, family = "poisson")
+summary(model2)
+UK_covid_data<- UK_covid_data%>%
+  mutate(predictionmodel2= predict(model2, type = "response"))
+```
