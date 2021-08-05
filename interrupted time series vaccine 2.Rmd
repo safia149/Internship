@@ -1,0 +1,56 @@
+
+```{r}
+UK_covid_data4<- covid_data%>%
+  filter(date>= "2021-5-19" & date<= "2021-7-14", location== "United Kingdom")
+```
+
+```{r}
+UK_covid_data4<- mutate(UK_covid_data4, day_no = as.numeric(ceiling(difftime(date, "2021-5-18", units = "days") ) ))
+UK_covid_data4<- UK_covid_data4%>%
+  mutate(vaccine= UK_covid_data4$day_no-29, change= ifelse(UK_covid_data4$day_no>= 29, 1, 0))
+UK_covid_data4<- mutate(UK_covid_data4, dayspostchange= change * vaccine )
+UK_covid_data4$change<- as.factor(UK_covid_data4$change)
+```
+
+####NEW CASES#####
+```{r}
+model3<- glm(data = UK_covid_data4, new_cases~ day_no + I(day_no^2) + change+ dayspostchange + I(dayspostchange^2), family = "poisson")
+summary(model3)
+UK_covid_data4<- UK_covid_data4%>%
+  mutate(predictionmodel3= predict(model3, type = "response"))
+```
+
+```{r}
+ggplot(UK_covid_data4, aes(x= date, colour= change))+
+  geom_point(aes(y= new_cases))+
+  geom_line(aes(y= UK_covid_data4$predictionmodel3))+
+  scale_x_date(date_breaks = "1 week", date_labels = "%d-%m-%y")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+  scale_y_log10()+
+  labs(title = "UK Daily New Cases", x= "Week", y= "Confimed new cases(log10)")+
+  geom_vline(xintercept = as.Date("2021-6-16"), linetype= 2)
+annotate("text", x= as.Date("2021-6-16"), y= 40,000, label= "Vaccine(16June)", angle= 90, size= 2 , colour= grey)
+ggsave("interrupted time series daily new cases(vaccine2).png")
+```
+
+
+#####NEW DEATHS####
+```{r}
+model4<- glm(data = UK_covid_data4, new_deaths~ day_no+ I(day_no^2) + change+ dayspostchange + I(dayspostchange^2), family = "poisson")
+summary(model3)
+UK_covid_data4<- UK_covid_data4%>%
+  mutate(predictionmodel4= predict(model4, type = "response"))
+```
+
+```{r}
+ggplot(UK_covid_data4, aes(x= date, colour= change))+
+  geom_point(aes(y= new_deaths))+
+  geom_line(aes(y= predictionmodel4))+
+  scale_x_date(date_breaks = "1 week", date_labels = "%d-%m-%y")+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))+
+  scale_y_log10()+
+  labs(title = "UK Daily New Deaths", x= "Week", y= "Confimed new deaths(log10)")+
+  geom_vline(xintercept = as.Date("2021-6-16"), linetype= 2)
+annotate("text", x= as.Date("2021-6-16"), y= 40,000, label= "Vaccine(16June)", angle= 90, size= 2 , colour= grey)
+ggsave("interrupted time series daily new deaths(vaccine2).png")
+```
